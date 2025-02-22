@@ -16,15 +16,12 @@ import os
 import spacy
 
 model_name = "en_core_web_sm"
+model_path = f"/opt/venv/lib/python3.12/site-packages/{model_name}"
 
-# Check if the model is already downloaded
-model_path = spacy.util.get_package_path(model_name)
-
-if not model_path:
+if not os.path.exists(model_path):
     print(f"Downloading SpaCy model: {model_name}")
     os.system(f"python -m spacy download {model_name}")
 
-# Load the model
 nlp = spacy.load(model_name)
 
 
