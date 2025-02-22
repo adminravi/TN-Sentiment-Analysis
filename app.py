@@ -14,16 +14,19 @@ sentiment_model = pipeline("sentiment-analysis", model="nlptown/bert-base-multil
 # Load Named Entity Recognition (NER) Model
 import os
 import spacy
-from spacy.cli import download
 
 model_name = "en_core_web_sm"
 
-try:
-    nlp = spacy.load(model_name)
-except OSError:
+# Check if the model is already downloaded
+model_path = spacy.util.get_package_path(model_name)
+
+if not model_path:
     print(f"Downloading SpaCy model: {model_name}")
-    download(model_name)
-    nlp = spacy.load(model_name)
+    os.system(f"python -m spacy download {model_name}")
+
+# Load the model
+nlp = spacy.load(model_name)
+
 
 # Function to fetch news headlines from RSS feeds
 def fetch_news():
