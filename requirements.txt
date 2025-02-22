@@ -4,7 +4,6 @@ feedparser
 schedule
 wordcloud
 matplotlib
-textblob
-spacy
 transformers
 torch
+spacy
