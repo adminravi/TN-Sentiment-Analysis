@@ -16,16 +16,13 @@ def load_sentiment_model():
 
 sentiment_model = load_sentiment_model()
 
-# 🚀 Lazy Load Named Entity Recognition (NER) Model (Prevents Infinite Restarts)
+import spacy
+import streamlit as st
+
+# 🚀 Lazy Load Named Entity Recognition (NER) Model
 @st.cache_resource
 def load_nlp_model():
-    model_name = "en_core_web_sm"
-    model_path = f"/opt/venv/lib/python3.12/site-packages/{model_name}"
-
-    if not os.path.isdir(model_path):
-        os.system(f"python -m spacy download {model_name}")
-
-    return spacy.load(model_name)
+    return spacy.load("en_core_web_sm")
 
 nlp = load_nlp_model()
 
