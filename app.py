@@ -1,28 +1,30 @@
 import streamlit as st
 import pandas as pd
 import feedparser
-import time
 import schedule
 import os
+import time
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 from transformers import pipeline
 import spacy
 
-# 🚀 Lazy Load Sentiment Model (Optimized for Faster Execution)
+# 🚀 Lazy Load Sentiment Analysis Model (Optimized for Speed)
 @st.cache_resource
 def load_sentiment_model():
     return pipeline("sentiment-analysis", model="nlptown/bert-base-multilingual-uncased-sentiment")
 
 sentiment_model = load_sentiment_model()
 
-import spacy
-import streamlit as st
-
 # 🚀 Lazy Load Named Entity Recognition (NER) Model
 @st.cache_resource
 def load_nlp_model():
-    return spacy.load("en_core_web_sm")
+    try:
+        return spacy.load("en_core_web_sm")
+    except OSError:
+        from spacy.cli import download
+        download("en_core_web_sm")
+        return spacy.load("en_core_web_sm")
 
 nlp = load_nlp_model()
 
@@ -44,6 +46,7 @@ def fetch_news():
                 "Link": entry.link,
                 "Published": entry.published
             })
+    
     return pd.DataFrame(news_list)
 
 # 🚀 Function to Analyze Sentiment Using BERT
@@ -89,14 +92,18 @@ def generate_wordcloud(df):
     wordcloud = WordCloud(width=800, height=400, background_color='white').generate(text)
     return wordcloud
 
-# 🚀 Function to Refresh Data Every 6 Hours
+# 🚀 Function to Refresh Data Every 6 Hours (Runs Only Once Per Cycle)
 def refresh_data():
-    global news_df
-    news_df = fetch_news()
-    news_df = analyze_sentiment(news_df)
-    news_df = extract_named_entities(news_df)
-    news_df = filter_by_keywords(news_df)
-    return news_df
+    try:
+        global news_df
+        news_df = fetch_news()
+        news_df = analyze_sentiment(news_df)
+        news_df = extract_named_entities(news_df)
+        news_df = filter_by_keywords(news_df)
+        return news_df
+    except Exception as e:
+        st.error(f"Error refreshing data: {str(e)}")
+        return pd.DataFrame()
 
 schedule.every(6).hours.do(refresh_data)
 
@@ -104,6 +111,7 @@ schedule.every(6).hours.do(refresh_data)
 def main():
     st.title("Tamil Nadu Political Sentiment Dashboard")
 
+    # Load data
     news_df = refresh_data()
 
     # 📊 Sentiment Overview
@@ -151,13 +159,13 @@ def main():
     st.subheader("Latest News Headlines")
     st.dataframe(filtered_df[["Published", "Source", "Title", "Sentiment", "Category", "Entities", "Link"]])
 
-    # ⏳ Automatic Refresh
+    # ⏳ Automatic Refresh Info
     st.text("Data refreshes every 6 hours")
 
     # ✅ Health Check
     @st.cache_data
     def health_check():
-        return "Healthy"
+        return "✅ Dashboard is Healthy"
 
     st.sidebar.text(health_check())
 
