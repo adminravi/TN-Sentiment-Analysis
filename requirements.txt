@@ -1,0 +1,10 @@
+streamlit
+pandas
+feedparser
+schedule
+wordcloud
+matplotlib
+textblob
+spacy
+transformers
+torch
